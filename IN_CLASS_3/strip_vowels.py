@@ -6,10 +6,12 @@
 # The function is useful for processing strings where vowels need to be excluded, 
 # such as creating consonant-only versions of text for specific applications.
 
-
 def strip_vowels(text):
-    """Remove all vowels from the given string."""
     vowels = "aeiouAEIOU"
     return ''.join([char for char in text if char not in vowels])
 
-
+if __name__ == "__main__":
+    print(strip_vowels("Hello World"))  
+    print(strip_vowels("Drham College!"))  
+    print(strip_vowels("CANADA is AWSOME BRO "))  
+    print(strip_vowels("WHAT IS AEIOU?"))  

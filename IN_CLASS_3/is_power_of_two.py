@@ -5,9 +5,7 @@
 # to efficiently determine whether the number is a power of 2. This can be useful in scenarios like 
 # optimizing resources in systems or verifying conditions in algorithms where powers of 2 are important.
 
-
 def is_power_of_two(number):
-    """Return True if the number is a power of 2, False otherwise."""
     if number < 1:
         return False
     return (number & (number - 1)) == 0

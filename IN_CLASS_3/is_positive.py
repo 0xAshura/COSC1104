@@ -5,9 +5,7 @@
 # greater than zero, and False otherwise. The function can handle both integer and floating-point numbers.
 # It can be used in applications where a decision needs to be made based on whether a number is positive.
 
-
 def is_positive(number):
-    """Return True if the number is positive, False otherwise."""
     return isinstance(number, (int, float)) and number > 0
 
 if __name__ == "__main__":
