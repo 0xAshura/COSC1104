@@ -4,59 +4,65 @@
 # The program prompts users for their minimum and optional maximum CPU cores and memory, loads instance data from a JSON file, filters the instances based on the provided criteria, and displays the results in a user-friendly format.
 
 import json
+import re
 
-def get_integer_input(prompt, optional=False, min_value=None):
-    """Prompt for integer input with validation and optional field support."""
+def get_input(prompt, min_value=None):
+    """Get validated integer input from the user."""
     while True:
-        user_input = input(prompt).strip()
-        if optional and not user_input:
-            return None
         try:
+            user_input = input(prompt).strip()
             value = int(user_input)
             if min_value is not None and value < min_value:
                 print(f"Value must be at least {min_value}.")
             else:
                 return value
         except ValueError:
-            print("Invalid input. Please enter a valid integer.")
+            print("Please enter a valid integer.")
 
-def load_instance_data(filename):
-    """Load and return JSON data from a file."""
-    try:
-        with open(filename, 'r') as file:
-            return json.load(file)
-    except (FileNotFoundError, json.JSONDecodeError):
-        print("Error loading instance data. Check the file and its content.")
-        return []
+def load_instances(filename):
+    """Load instance data from a large JSON file."""
+    with open(filename, 'r') as file:
+        return json.load(file)
 
-def filter_instances(instances, min_cpu, max_cpu, min_memory, max_memory):
-    """Filter instances based on CPU and memory criteria."""
-    return [
-        instance for instance in instances
-        if min_cpu <= instance.get("vCPU", 0) <= (max_cpu or instance["vCPU"])
-        and min_memory <= instance.get("MemoryGiB", 0) <= (max_memory or instance["MemoryGiB"])
-    ]
+def parse_cpu(cpu_str):
+    """Extract the number of CPUs from a string like '16 vCPUs' or '2 vCPUs for a burst'."""
+    match = re.search(r'(\d+)', cpu_str)
+    return int(match.group(1)) if match else 0
 
-def display_instances(instances):
-    """Display filtered instances in a readable format."""
-    if instances:
-        print("\nFiltered EC2 Instances:")
-        for instance in instances:
-            print(f"Type: {instance['InstanceType']}, vCPU: {instance['vCPU']}, Memory: {instance['MemoryGiB']} GiB")
-    else:
-        print("No instances match the specified requirements.")
+def parse_memory(memory_str):
+    """Extract the amount of memory in GiB from a string like '64.0 GiB'."""
+    match = re.search(r'(\d+(\.\d+)?)', memory_str)
+    return float(match.group(1)) if match else 0
+
+def filter_instances(instances, min_cpu, min_memory):
+    """Filter instances based on minimum CPU and memory requirements."""
+    filtered = []
+    for instance in instances:
+        cpu = parse_cpu(instance.get("vcpu", "0 vCPUs"))
+        memory = parse_memory(instance.get("memory", "0 GiB"))
+
+        # Only apply minimum filters for CPU and memory
+        if cpu >= min_cpu and memory >= min_memory:
+            filtered.append(instance)
+
+    return filtered
 
 def main():
-    # Input requirements
-    min_cpu = get_integer_input("Enter minimum CPU cores: ", min_value=1)
-    max_cpu = get_integer_input("Enter maximum CPU cores (optional): ", optional=True)
-    min_memory = get_integer_input("Enter minimum memory (GiB): ", min_value=1)
-    max_memory = get_integer_input("Enter maximum memory (GiB, optional): ", optional=True)
+    # Get user input for CPU and memory requirements
+    min_cpu = get_input("Enter minimum CPU cores: ", min_value=1)
+    min_memory = get_input("Enter minimum memory (GiB): ", min_value=1)
 
-    # Load, filter, and display
-    instances = load_instance_data("instances.json")
-    filtered_instances = filter_instances(instances, min_cpu, max_cpu, min_memory, max_memory)
-    display_instances(filtered_instances)
+    # Load instances from JSON file
+    instances = load_instances("instances.json")  # Ensure the filename is correct
+
+    # Filter instances based on user input
+    filtered_instances = filter_instances(instances, min_cpu, min_memory)
+
+    # Display filtered results in a readable format
+    print("\nFiltered EC2 Instances:")
+    for instance in filtered_instances:
+        print(f"Type: {instance['name']}, vCPU: {instance['vcpu']}, Memory: {instance['memory']}, "
+              f"Storage: {instance['storage']}, Bandwidth: {instance['bandwidth']}, Availability: {instance['availability']}")
 
 if __name__ == "__main__":
     main()
