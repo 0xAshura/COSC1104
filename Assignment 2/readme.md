@@ -76,7 +76,7 @@ Choose an option: 2
 ---
 
 ## **Requirements**  
-- Python 3.x  
+- Python 3.12.0  
 - SQLite (pre-installed with Python)  
 
 ---
