@@ -1,3 +1,6 @@
+#Author: Mihir Limbad (100938484)
+#Date: 06/12/2024
+
 import boto3
 import os
 import logging
